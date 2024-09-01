@@ -33,12 +33,12 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: metabase-db-secret
-                  key: db-user
+                  key: DB_USER
             - name: MB_DB_PASS
               valueFrom:
                 secretKeyRef:
                   name: metabase-db-secret
-                  key: db-password        
+                  key: DB_PASSWORD       
           command: ["sh", "-c", "mysql -h $MB_DB_HOST -P $MB_DB_PORT -u$DB_USER -p$MB_DB_PASS"] 
 
       containers:
@@ -55,7 +55,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: metabase-db-secret
-                  key: db-name
+                  key: DB_NAME
             - name: MB_DB_PORT
               valueFrom:
                 configMapKeyRef:
@@ -65,12 +65,12 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: metabase-db-secret
-                  key: db-user
+                  key: DB_USER
             - name: MB_DB_PASS
               valueFrom:
                 secretKeyRef:
                   name: metabase-db-secret
-                  key: db-password
+                  key: DB_PASSWORD
             - name: MB_DB_HOST
               valueFrom:
                 configMapKeyRef:
@@ -84,5 +84,5 @@ spec:
           secret:
             secretName: metabase-db-secret
         - configMap:
-            name: metabase-config map
+            name: metabase-configmap
           name: config-volume
