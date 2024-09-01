@@ -16,7 +16,12 @@ spec:
       initContainers:
         - name: "init-db"
           image: "alpine:latest"
-          command: ["sh", "-c", "/docker-entrypoint-initdb.d/init-db.sh"]
+          command:
+            - sh
+            - -c
+            - |
+              chmod +x /docker-entrypoint-initdb.d/init-db.sh
+              /docker-entrypoint-initdb.d/init-db.sh
           volumeMounts:
             - name: init-script-volume
               mountPath: "/docker-entrypoint-initdb.d"
