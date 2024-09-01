@@ -39,22 +39,22 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: metabase-db-secret
-                  key: db-password
+                  key: DB_PASSWORD
             - name: MYSQL_DATABASE
               valueFrom:
                 secretKeyRef:
                   name: metabase-db-secret
-                  key: db-name
+                  key: DB_NAME
             - name: MYSQL_USER
               valueFrom:
                 secretKeyRef:
                   name: metabase-db-secret
-                  key: db-user
+                  key: DB_USER
             - name: MYSQL_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: metabase-db-secret
-                  key: db-password
+                  key: DB_PASSWORD
           ports:
             - containerPort: 3306
               name: mysql
