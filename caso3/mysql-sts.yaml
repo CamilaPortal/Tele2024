@@ -3,58 +3,76 @@ kind: StatefulSet
 metadata:
   name: mysql
 spec:
-  serviceName: "mysql"
-  replicas: 1
   selector:
     matchLabels:
       app: mysql
+  serviceName: "mysql"
+  replicas: 1
   template:
     metadata:
       labels:
         app: mysql
     spec:
+      initContainers:
+        - name: "remove-lost-found"
+          image: "busybox:1.25.0"
+          imagePullPolicy: "IfNotPresent"
+          command: ["rm", "-fr", "/var/lib/mysql/lost+found"]
+          volumeMounts:
+            - name: mysql-data
+              mountPath: /var/lib/mysql
+
+        - name: "sqldump-download"
+          image: "alpine:latest"
+          imagePullPolicy: "IfNotPresent"
+          command: ["sh", "-c", "wget --no-check-certificate 'https://drive.google.com/file/d/1HXy4iBg6UO7GAuIY08PUDt78oKIoArcZ/view?usp=sharing' -O /sqldump/google-mobility.sql"]
+          volumeMounts:
+            - name: sql-dump-volume
+              mountPath: "/sqldump"
+
       containers:
-      - name: mysql
-        image: mysql:8.4
-        ports:
-        - containerPort: 3306
-        args: 
-        - --mysql-native-password=ON
-        readinessProbe:
-          exec:
-            command: ['mysqladmin', 'ping', '-h', 'localhost']
-          initialDelaySeconds: 30
-          periodSeconds: 10
-          timeoutSeconds: 5
-        env:
-        - name: MYSQL_ROOT_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: metabase-db-secret
-              key: MYSQL_ROOT_PASSWORD
-        - name: MYSQL_DATABASE
-          valueFrom:
-            secretKeyRef:
-              name: metabase-db-secret
-              key: DB_NAME
-        - name: MYSQL_USER
-          valueFrom:
-            secretKeyRef:
-              name: metabase-db-secret
-              key: DB_USER
-        - name: MYSQL_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: metabase-db-secret
-              key: DB_PASSWORD
-        volumeMounts:
-        - name: mysql-persistent-storage
-          mountPath: /var/lib/mysql
+        - name: mysql
+          image: mysql:9.0
+          imagePullPolicy: Always
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: metabase-db-secret
+                  key: db-password
+            - name: MYSQL_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: metabase-db-secret
+                  key: db-name
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: metabase-db-secret
+                  key: db-user
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: metabase-db-secret
+                  key: db-password
+          ports:
+            - containerPort: 3306
+              name: mysql
+          volumeMounts:
+            - mountPath: "/docker-entrypoint-initdb.d/"
+              name: sql-dump-volume     
+      volumes:
+        - name: secret-volume
+          secret:
+            secretName: metabase-db-secret
+        - name: sql-dump-volume
+          persistentVolumeClaim:
+            claimName: mysql-pvc
   volumeClaimTemplates:
-  - metadata:
-      name: mysql-persistent-storage
-    spec:
-      accessModes: [ "ReadWriteOnce" ]
-      resources:
-        requests:
-          storage: 1Gi
+    - metadata:
+        name: mysql-data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 1Gi
