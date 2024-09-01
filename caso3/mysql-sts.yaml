@@ -2,72 +2,65 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: mysql
+  namespace: cportal-c3
 spec:
   serviceName: "mysql"
   replicas: 1
   selector:
-	matchLabels:
-	  app: mysql
+    matchLabels:
+      app: mysql
   template:
-	metadata:
-	  labels:
-		app: mysql
-	spec:
-	  initContainers:
-	  - name: init-db
-		image: busybox
-		command: ['sh', '-c', 'chmod +x /docker-entrypoint-initdb.d/init-db.sh && /docker-entrypoint-initdb.d/init-db.sh']
-		volumeMounts:
-		- name: init-script
-		  mountPath: /docker-entrypoint-initdb.d
-	  containers:
-	  - name: mysql
-		image: mysql:5.7
-		ports:
-		- containerPort: 3306
-		env:
-		- name: MYSQL_ROOT_PASSWORD
-		  valueFrom:
-			secretKeyRef:
-			  name: metabase-db-secret
-			  key: DB_PASSWORD
-		- name: MYSQL_DATABASE
-		  valueFrom:
-			secretKeyRef:
-			  name: metabase-db-secret
-			  key: DB_NAME
-		- name: MYSQL_USER
-		  valueFrom:
-			secretKeyRef:
-			  name: metabase-db-secret
-			  key: DB_USER
-		- name: MYSQL_PASSWORD
-		  valueFrom:
-			secretKeyRef:
-			  name: metabase-db-secret
-			  key: DB_PASSWORD
-		volumeMounts:
-		- name: mysql-persistent-storage
-		  mountPath: /var/lib/mysql
-		readinessProbe:
-		  exec:
-			command: ["mysqladmin", "ping", "-h", "localhost"]
-		  initialDelaySeconds: 30
-		  periodSeconds: 10
-		livenessProbe:
-		  exec:
-			command: ["mysqladmin", "ping", "-h", "localhost"]
-		  initialDelaySeconds: 60
-		  periodSeconds: 10
-  volumeClaimTemplates:
-  - metadata:
-	  name: mysql-persistent-storage
-	spec:
-	  accessModes: [ "ReadWriteOnce" ]
-	  resources:
-		requests:
-		  storage: 100Mi
-  volumes:
-  - name: init-script
-	configMap:
-	  name: init-script-configmap
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      initContainers:
+        - name: init-db
+          image: busybox
+          command: ["sh", "-c", "chmod +x /docker-entrypoint-initdb.d/init-db.sh && /docker-entrypoint-initdb.d/init-db.sh"]
+          volumeMounts:
+            - name: init-script-volume
+              mountPath: /docker-entrypoint-initdb.d
+      containers:
+        - name: mysql
+          image: mysql:5.7
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: metabase-db-secret
+                  key: DB_PASSWORD
+            - name: MYSQL_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: metabase-db-secret
+                  key: DB_NAME
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: metabase-db-secret
+                  key: DB_USER
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: metabase-db-secret
+                  key: DB_PASSWORD
+          ports:
+            - containerPort: 3306
+          volumeMounts:
+            - name: mysql-data
+              mountPath: /var/lib/mysql
+            - name: init-script-volume
+              mountPath: /docker-entrypoint-initdb.d
+      volumes:
+        - name: init-script-volume
+          configMap:
+            name: init-script-configmap
+      volumeClaimTemplates:
+        - metadata:
+            name: mysql-data
+          spec:
+            accessModes: [ "ReadWriteOnce" ]
+            resources:
+              requests:
+                storage: 100Mi
