@@ -4,16 +4,16 @@ metadata:
   name: init-script-configmap
 data:
   init-db.sh: |
-	#!/bin/bash
+    #!/bin/bash
 
-	FILE_ID="1SDsrhrNCSL-PbOhFTmZv29DjKnakBklu"
-	FILE_NAME="dataset.sql"
+    FILE_ID="1SDsrhrNCSL-PbOhFTmZv29DjKnakBklu"
+    FILE_NAME="dataset.sql"
 
-	curl -L -o $FILE_NAME "https://drive.google.com/uc?export=download&id=${FILE_ID}"
+    curl -L -o $FILE_NAME "https://drive.google.com/uc?export=download&id=${FILE_ID}"
 
-	until mysql -h "localhost" -u "root" -p"${MYSQL_ROOT_PASSWORD}" -e "SHOW DATABASES;" > /dev/null 2>&1; do
-	  echo "Esperando a que MySQL esté listo..."
-	  sleep 2
-	done
+    until mysql -h "localhost" -u "root" -p"${MYSQL_ROOT_PASSWORD}" -e "SHOW DATABASES;" > /dev/null 2>&1; do
+      echo "Esperando a que MySQL esté listo..."
+      sleep 2
+    done
 
-	mysql -h "localhost" -u "root" -p"${MYSQL_ROOT_PASSWORD}" < $FILE_NAME
+    mysql -h "localhost" -u "root" -p"${MYSQL_ROOT_PASSWORD}" < $FILE_NAME
