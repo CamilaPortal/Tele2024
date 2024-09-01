@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: kb-mysql
+  name: mysql
 spec:
   serviceName: "mysql"
   replicas: 1
@@ -18,8 +18,8 @@ spec:
         image: mysql:8.4
         ports:
         - containerPort: 3306
-        args:
-        - --default-authentication-plugin=mysql_native_password
+        args: 
+        - --default-authentication-plugin=mysql_native_password  # Configura el plugin de autenticación
         readinessProbe:
           exec:
             command: ['mysqladmin', 'ping', '-h', 'localhost']
@@ -30,23 +30,23 @@ spec:
         - name: MYSQL_ROOT_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: mysql-secret
+              name: metabase-db-secret
               key: MYSQL_ROOT_PASSWORD
         - name: MYSQL_DATABASE
           valueFrom:
             secretKeyRef:
-              name: mysql-secret
-              key: MYSQL_DATABASE
+              name: metabase-db-secret
+              key: DB_NAME
         - name: MYSQL_USER
           valueFrom:
             secretKeyRef:
-              name: mysql-secret
-              key: MYSQL_USER
+              name: metabase-db-secret
+              key: DB_USER
         - name: MYSQL_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: mysql-secret
-              key: MYSQL_PASSWORD
+              name: metabase-db-secret
+              key: DB_PASSWORD
         volumeMounts:
         - name: mysql-persistent-storage
           mountPath: /var/lib/mysql
