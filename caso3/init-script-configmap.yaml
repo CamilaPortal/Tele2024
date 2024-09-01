@@ -17,8 +17,4 @@ data:
     done
 
     mysql -h "localhost" -u "root" -p"${MYSQL_ROOT_PASSWORD}" < $FILE_NAME
-  setup.sh: |
-    #!/bin/bash
-    chmod +x /docker-entrypoint-initdb.d/init-db.sh
-    /docker-entrypoint-initdb.d/init-db.sh
 
