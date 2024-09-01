@@ -19,9 +19,7 @@ spec:
           command:
             - sh
             - -c
-            - |
-              chmod +x /docker-entrypoint-initdb.d/init-db.sh
-              /docker-entrypoint-initdb.d/init-db.sh
+            - /docker-entrypoint-initdb.d/setup.sh
           volumeMounts:
             - name: init-script-volume
               mountPath: "/docker-entrypoint-initdb.d"
